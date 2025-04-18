@@ -10,7 +10,7 @@ import Mathlib.LinearAlgebra.RootSystem.Finite.Lemmas
 
 The `𝔤₂` root pairing is special enough to deserve its own API. We provide one in this file.
 
-As an application we prove the key result that a finite, crystallographic, reduced, irreducible root
+As an application we prove the key result that a crystallographic, reduced, irreducible root
 pairing containing two roots of Coxeter weight three is spanned by this pair of roots (and thus
 is two-dimensional). This result is usually proved only for pairs of roots belonging to a base (as a
 corollary of the fact that no node can have degree greater than three) and moreover usually requires
@@ -20,13 +20,16 @@ stronger assumptions on the coefficients than here.
  * `RootPairing.EmbeddedG2`: a data-bearing typeclass which distinguishes a pair of roots whose
    pairing is `-3` (equivalently, with a distinguished choice of base). This is a sufficient
    condition for the span of this pair of roots to be a `𝔤₂` root system.
+ * `RootPairing.IsG2`: a prop-valued typeclass characterising the `𝔤₂` root system.
+ * `RootPairing.IsNotG2`: a prop-valued typeclass stating that a crystallographic, reduced,
+   irreducible root system is not `𝔤₂`.
  * `RootPairing.EmbeddedG2.shortRoot`: the distinguished short root, which we often donate `α`
  * `RootPairing.EmbeddedG2.longRoot`: the distinguished long root, which we often donate `β`
  * `RootPairing.EmbeddedG2.shortAddLong`: the short root `α + β`
  * `RootPairing.EmbeddedG2.twoShortAddLong`: the short root `2α + β`
  * `RootPairing.EmbeddedG2.threeShortAddLong`: the long root `3α + β`
  * `RootPairing.EmbeddedG2.threeShortAddTwoLong`: the long root `3α + 2β`
- * `RootPairing.EmbeddedG2.span_eq_top`: a finite crystallographic reduced irreducible root pairing
+ * `RootPairing.EmbeddedG2.span_eq_top`: a crystallographic reduced irreducible root pairing
    containing two roots with pairing `-3` is spanned by this pair (thus two-dimensional).
  * `RootPairing.EmbeddedG2.card_index_eq_twelve`: the `𝔤₂`root pairing has twelve roots.
 
@@ -51,6 +54,43 @@ class EmbeddedG2 extends P.IsCrystallographic, P.IsReduced where
   short : ι
   pairingIn_long_short : P.pairingIn ℤ long short = - 3
 
+/-- A prop-valued typeclass characterising the `𝔤₂` root system. -/
+class IsG2 : Prop extends P.IsCrystallographic, P.IsReduced, P.IsIrreducible where
+  exists_pairingIn_neg_three : ∃ i j, P.pairingIn ℤ i j = -3
+
+/-- A prop-valued typeclass stating that a crystallographic, reduced, irreducible root system is not
+`𝔤₂`. -/
+class IsNotG2 : Prop extends P.IsCrystallographic, P.IsReduced, P.IsIrreducible where
+  pairingIn_mem_zero_one_two (i j : ι) : P.pairingIn ℤ i j ∈ ({-2, -1, 0, 1, 2} : Set ℤ)
+
+section IsG2
+
+variable [P.IsCrystallographic] [P.IsReduced] [P.IsIrreducible]
+
+lemma isG2_iff :
+    P.IsG2 ↔ ∃ i j, P.pairingIn ℤ i j = -3 :=
+  ⟨fun _ ↦ IsG2.exists_pairingIn_neg_three, fun h ↦ ⟨h⟩⟩
+
+lemma isNotG2_iff :
+    P.IsNotG2 ↔ ∀ i j, P.pairingIn ℤ i j ∈ ({-2, -1, 0, 1, 2} : Set ℤ) :=
+  ⟨fun _ ↦ IsNotG2.pairingIn_mem_zero_one_two, fun h ↦ ⟨h⟩⟩
+
+variable [Finite ι] [CharZero R] [IsDomain R]
+
+@[simp]
+lemma not_isG2_iff_isNotG2 :
+    ¬ P.IsG2 ↔ P.IsNotG2 := by
+  simp only [isG2_iff, isNotG2_iff, not_exists, Set.mem_insert_iff, mem_singleton_iff]
+  refine ⟨fun h i j ↦ ?_, fun h i j ↦ ?_⟩
+  · have hij := h i j
+    have hij' := h (P.reflection_perm i i) j
+    have := P.pairingIn_pairingIn_mem_set_of_isCrystal_of_isRed i j
+    aesop
+  · specialize h i j
+    aesop
+
+end IsG2
+
 namespace EmbeddedG2
 
 /-- A pair of roots which pair to `+3` are also sufficient to distinguish an embedded `𝔤₂`. -/
@@ -63,6 +103,9 @@ namespace EmbeddedG2
 variable [P.EmbeddedG2]
 
 attribute [simp] pairingIn_long_short
+
+instance [P.IsIrreducible] : P.IsG2 where
+  exists_pairingIn_neg_three := ⟨long P, short P, by simp⟩
 
 @[simp]
 lemma pairing_long_short : P.pairing (long P) (short P) = - 3 := by
@@ -115,7 +158,7 @@ lemma allRoots_subset_range_root [DecidableEq M] :
     Finset.coe_singleton, mem_insert_iff, mem_singleton_iff] at hx
   rcases hx with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp
 
-variable [Finite ι] [CharZero R] [IsDomain R] [NoZeroSMulDivisors R M]
+variable [Finite ι] [CharZero R] [IsDomain R]
 
 @[simp]
 lemma pairingIn_short_long :
@@ -139,7 +182,7 @@ lemma twoShortAddLongRoot_eq :
   simp [twoShortAddLongRoot, twoShortAddLong, reflection_apply_root]
   module
 
-omit [Finite ι] [CharZero R] [IsDomain R] [NoZeroSMulDivisors R M] in
+omit [Finite ι] [CharZero R] [IsDomain R] in
 lemma threeShortAddLongRoot_eq :
     threeShortAddLongRoot P = (3 : R) • shortRoot P + longRoot P := by
   simp [threeShortAddLongRoot, threeShortAddLong, reflection_apply_root]
@@ -152,6 +195,7 @@ lemma threeShortAddTwoLongRoot_eq :
 
 lemma linearIndependent_short_long :
     LinearIndependent R ![shortRoot P, longRoot P] := by
+  have := P.reflexive_left
   simp [P.linearIndependent_iff_coxeterWeightIn_ne_four ℤ, coxeterWeightIn]
 
 /-- The coefficients of each root in the `𝔤₂` root pairing, relative to the base. -/
@@ -188,7 +232,7 @@ lemma long_eq_three_mul_short :
     B.form (longRoot P) (longRoot P) = 3 * B.form (shortRoot P) (shortRoot P) := by
   simpa using B.pairing_mul_eq_pairing_mul_swap (long P) (short P)
 
-omit [Finite ι] [CharZero R] [IsDomain R] [NoZeroSMulDivisors R M]
+omit [Finite ι] [CharZero R] [IsDomain R]
 
 /-- `α + β` is short. -/
 @[simp] lemma shortAddLongRoot_shortRoot :
@@ -282,7 +326,6 @@ variable (i : ι)
   · rw [B.two_mul_apply_root_root, B.two_mul_apply_root_root, mul_assoc]
   · rw [long_eq_three_mul_short, twoShortAddLongRoot_shortRoot]; ring
 
-omit [NoZeroSMulDivisors R M] in
 @[simp] lemma pairingIn_threeShortAddLong_left :
     P.pairingIn ℤ (threeShortAddLong P) i =
       3 * P.pairingIn ℤ (short P) i + P.pairingIn ℤ (long P) i := by
@@ -379,6 +422,7 @@ private lemma isOrthogonal_short_and_long_aux {a b c d e f a' b' c' d' e' f' : �
 lemma isOrthogonal_short_and_long {i : ι} (hi : P.root i ∉ allRoots P) :
     P.IsOrthogonal i (short P) ∧ P.IsOrthogonal i (long P) := by
   suffices P.pairingIn ℤ i (short P) = 0 ∧ P.pairingIn ℤ i (long P) = 0 by
+    have := P.reflexive_left
     simpa [isOrthogonal_iff_pairing_eq_zero, ← P.algebraMap_pairingIn ℤ]
   simp only [mem_cons, not_mem_nil, or_false, not_or] at hi
   obtain ⟨h₁, h₂, h₃, h₄, h₅, h₆, h₇, h₈, h₉, h₁₀, h₁₁, h₁₂⟩ := hi
@@ -410,6 +454,7 @@ lemma mem_allRoots (i : ι) :
   obtain ⟨h₁, h₂⟩ := isOrthogonal_short_and_long P hi
   have : Fintype ι := Fintype.ofFinite ι
   have B := (P.posRootForm ℤ).toInvariantForm
+  have := P.reflexive_left
   rw [isOrthogonal_iff_pairing_eq_zero, ← B.apply_root_root_zero_iff] at h₁ h₂
   have key : B.form (P.root i) = 0 := by
     ext x
@@ -443,6 +488,7 @@ lemma card_index_eq_twelve :
   rw [← this]
   exact Nat.card_congr <| indexEquivAllRoots P
 
+-- Maybe I should change this to the giant block of `∨` since that's how I'm using it?
 lemma setOf_index_eq_univ :
     letI _i := P.indexNeg
     { long P, -long P,
