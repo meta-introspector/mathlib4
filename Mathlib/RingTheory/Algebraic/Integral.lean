@@ -432,7 +432,7 @@ end
 variable [NoZeroDivisors S] {a : S} (ha : Transcendental R a)
 include ha
 
-protected lemma integralClosure  : Transcendental (integralClosure R S) a :=
+protected lemma integralClosure : Transcendental (integralClosure R S) a :=
   ha.extendScalars_of_isIntegral _
 
 lemma subalgebraAlgebraicClosure [IsDomain R] :
