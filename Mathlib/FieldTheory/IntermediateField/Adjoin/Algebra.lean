@@ -32,13 +32,13 @@ scoped instance : Algebra (Algebra.adjoin F S) (adjoin F S) :=
 
 scoped instance (X) [SMul X F] [SMul X E] [IsScalarTower X F E] :
     IsScalarTower X (Algebra.adjoin F S) (adjoin F S) :=
-  Subalgebra.inclusion.instIsScalarTowerSubtypeMemBot (algebra_adjoin_le_adjoin F S) _
+  Subalgebra.inclusion.isScalarTower_left (algebra_adjoin_le_adjoin F S) _
 
 scoped instance (X) [MulAction E X] : IsScalarTower (Algebra.adjoin F S) (adjoin F S) X :=
-  Subalgebra.inclusion.instIsScalarTowerSubtypeMemTop (algebra_adjoin_le_adjoin F S) _
+  Subalgebra.inclusion.isScalarTower_right (algebra_adjoin_le_adjoin F S) _
 
 scoped instance : FaithfulSMul (Algebra.adjoin F S) (adjoin F S) :=
-  Subalgebra.inclusion.instFaithfulSMulSubtypeMem (algebra_adjoin_le_adjoin F S)
+  Subalgebra.inclusion.faithfulSMul (algebra_adjoin_le_adjoin F S)
 
 scoped instance : IsFractionRing (Algebra.adjoin F S) (adjoin F S) :=
   .of_field _ _ fun ⟨_, h⟩ ↦ have ⟨x, hx, y, hy, eq⟩ := mem_adjoin_iff_div.mp h

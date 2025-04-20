@@ -669,7 +669,7 @@ theorem coe_inclusion (s : S) : (inclusion h s : A) = s :=
 
 namespace inclusion
 
-scoped instance instIsScalarTowerSubtypeMemBot (X) [SMul X R] [SMul X A] [IsScalarTower X R A] :
+scoped instance isScalarTower_left (X) [SMul X R] [SMul X A] [IsScalarTower X R A] :
     letI := (inclusion h).toModule; IsScalarTower X S T :=
   letI := (inclusion h).toModule
   ⟨fun x s t ↦ Subtype.ext <| by
@@ -677,11 +677,11 @@ scoped instance instIsScalarTowerSubtypeMemBot (X) [SMul X R] [SMul X A] [IsScal
       Algebra.smul_def, Algebra.smul_def]
     apply mul_assoc⟩
 
-scoped instance instIsScalarTowerSubtypeMemTop (X) [MulAction A X] :
+scoped instance isScalarTower_right (X) [MulAction A X] :
     letI := (inclusion h).toModule; IsScalarTower S T X :=
   letI := (inclusion h).toModule; ⟨fun _ ↦ mul_smul _⟩
 
-scoped instance instFaithfulSMulSubtypeMem :
+scoped instance faithfulSMul :
     letI := (inclusion h).toModule; FaithfulSMul S T :=
   letI := (inclusion h).toModule
   ⟨fun {x y} h ↦ Subtype.ext <| by
