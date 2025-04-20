@@ -41,7 +41,7 @@ scoped instance : FaithfulSMul (Algebra.adjoin F S) (adjoin F S) :=
   Subalgebra.inclusion.instFaithfulSMulSubtypeMem (algebra_adjoin_le_adjoin F S)
 
 scoped instance : IsFractionRing (Algebra.adjoin F S) (adjoin F S) :=
-  .of_field _ _ fun ⟨z, hz⟩ ↦ have ⟨x, hx, y, hy, eq⟩ := mem_adjoin_iff_div.mp hz
+  .of_field _ _ fun ⟨_, h⟩ ↦ have ⟨x, hx, y, hy, eq⟩ := mem_adjoin_iff_div.mp h
     ⟨⟨x, hx⟩, ⟨y, hy⟩, Subtype.ext eq⟩
 
 scoped instance : Algebra.IsAlgebraic (Algebra.adjoin F S) (adjoin F S) :=
