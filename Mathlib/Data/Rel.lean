@@ -7,33 +7,30 @@ import Mathlib.Data.Set.BooleanAlgebra
 import Mathlib.Tactic.MinImports
 
 /-!
-# Relations
+# Relations as sets of pairs
 
-This file defines bundled relations. A relation between `α` and `β` is a function `α → β → Prop`.
-Relations are also known as set-valued functions, or partial multifunctions.
+This file provides API to regard relations between `α` and `β`  as sets of pairs `Set (α × β)`.
+
+This is in particular useful in the study of uniform spaces, which are topological spaces equipped
+with a *uniformity*, namely a filter of pairs `α × α` whose elements can be viewed as "proximity"
+relations.
 
 ## Main declarations
 
-* `Rel α β`: Relation between `α` and `β`.
-* `Rel.inv`: `R.inv` is the `Rel β α` obtained by swapping the arguments of `R`.
-* `Rel.dom`: Domain of a relation. `x ∈ R.dom` iff there exists `y` such that `R x y`.
-* `Rel.cod`: Codomain, aka range, of a relation. `y ∈ R.codom` iff there exists `x` such that
-  `R x y`.
-* `Rel.comp`: Relation composition. Note that the arguments order follows the `CategoryTheory/`
-  one, so `R.comp S x z ↔ ∃ y, R x y ∧ S y z`.
-* `Rel.image`: Image of a set under a relation. `image R S` is the set of `f x` over all `x ∈ S`.
-* `Rel.preimage`: Preimage of a set under a relation. Note that `R.preimage = R.inv.image`.
-* `Rel.core`: Core of a set. For `S : Set β`, `R.core S` is the set of `x : α` such that all `y`
-  related to `x` are in `S`.
-* `Rel.restrict_domain`: Domain-restriction of a relation to a subtype.
+* `Rel α β`: Type of relations between `α` and `β`.
+* `Rel.inv`: Turn `R : Rel α β` into `R.inv : Rel β α` by swapping the arguments.
+* `Rel.dom`: Domain of a relation. `a ∈ R.dom` iff there exists `b` such that `a ~[R] b`.
+* `Rel.cod`: Codomain of a relation. `b ∈ R.cod` iff there exists `a` such that `a ~[R] b`.
+* `Rel.id`: The identity relation `Rel α α`.
+* `Rel.comp`: Relation composition. Note that the arguments order follows the category theory
+  convention, namely `(R ○ S) a c ↔ ∃ b, a ~[R] b ∧ b ~[S] z`.
+* `Rel.image`: Image of a set under a relation. `b ∈ image R s` iff there exists `a ∈ s`
+  such that `a ~[R] b`.
+* `Rel.preimage`: Image of a set under a relation. `a ∈ image R t` iff there exists `b ∈ t`
+  such that `a ~[R] b`.
+* `Rel.core`: Core of a set. For `t : Set β`, `a ∈ R.core t` iff all `b` related to `a` are in `t`.
+* `Rel.restrictDomain`: Domain-restriction of a relation to a subtype.
 * `Function.graph`: Graph of a function as a relation.
-
-## TODO
-
-The `Rel.comp` function uses the notation `R ○ S`, rather than the more common `R ∘ S` for things
-named `comp`. This is because the latter is already used for function composition, and causes a
-clash. A better notation should be found, perhaps a variant of `R ∘r S` or `R; S`.
-
 -/
 
 variable {α β γ δ : Type*}
