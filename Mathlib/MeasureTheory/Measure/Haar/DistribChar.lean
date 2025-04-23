@@ -8,12 +8,13 @@ import Mathlib.MeasureTheory.Measure.Haar.Unique
 /-!
 # The distributive character of Haar measures
 
-Given a group `G` acting on an measurable additive commutative group `A`, and an element `g : G`,
-one can pull back the Haar measure `μ` of `A` along the map `(g • ·) : A → A` to get another Haar
-measure `μ'` on `A`. By unicity of Haar measures, there exists some nonnegative real number `r` such
-that `μ' = r • μ`. We can thus define a map `distribHaarChar : G → ℝ≥0` sending `g` to its
-associated real number `r`. Furthermore, this number doesn't depend on the Haar measure `μ` we
-started with, and `distribHaarChar` is a group homomorphism.
+Given a group `G` acting by additive morphisms on a locally compact additive commutative group `A`,
+and an element `g : G`, one can pull back the Haar measure `μ` of `A`
+along the map `(g • ·) : A → A` to get another Haar measure `μ'` on `A`.
+By unicity of Haar measures, there exists some nonnegative real number `r` such that `μ' = r • μ`.
+We can thus define a map `distribHaarChar : G → ℝ≥0` sending `g` to its associated real number `r`.
+Furthermore, this number doesn't depend on the Haar measure `μ` we started with,
+and `distribHaarChar` is a group homomorphism.
 
 ## See also
 
