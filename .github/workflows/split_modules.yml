@@ -1,0 +1,80 @@
+name: Split Modules
+
+on:
+  push:
+    branches: [feature/split]
+  workflow_dispatch:
+    inputs:
+      root_module:
+        description: 'Root module to split from'
+        default: 'Mathlib'
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  split:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: leanprover/lean4-action@v1
+        with:
+          auto-config: false
+
+      - name: Get lake packages
+        run: lake build --no-build 2>/dev/null || true
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Build lean_split
+        working-directory: tools/lean_split
+        run: cargo build --release
+
+      - name: Generate catalog
+        run: |
+          ROOT="${{ github.event.inputs.root_module || 'Mathlib' }}"
+          BIN=tools/lean_split/target/release/lean_split
+          PKG=.lake/packages
+
+          # Full catalog
+          $BIN catalog "$ROOT" --packages-dir "$PKG" --output catalog
+          echo "Catalog: $(wc -l < catalog/catalog.json) lines"
+
+          # Per-module nix derivations
+          $BIN nix "$ROOT" --packages-dir "$PKG" --output nix-modules
+          echo "Nix modules: $(ls nix-modules/*.nix | wc -l) files"
+
+          # Closure list
+          $BIN closure "$ROOT" --packages-dir "$PKG" > closure.txt
+          echo "Closure: $(wc -l < closure.txt) modules"
+
+      - name: Package archives
+        run: |
+          tar czf catalog.tar.gz catalog/
+          tar czf nix-modules.tar.gz nix-modules/
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: split-${{ github.sha }}
+          name: "Module Split ${{ github.sha }}"
+          body: |
+            Per-module split of mathlib4.
+
+            - `catalog.tar.gz` — JSON catalog (per-module hash, imports, decl count, size)
+            - `nix-modules.tar.gz` — Per-file nix derivations with `select.nix`
+            - `closure.txt` — Full transitive import closure
+
+            Usage:
+            ```bash
+            # Pick modules to build
+            nix-build nix-modules/select.nix --arg wanted '["Mathlib_Algebra_Vertex_HVertexOperator"]'
+            ```
+          files: |
+            catalog.tar.gz
+            nix-modules.tar.gz
+            closure.txt
