@@ -17,18 +17,18 @@ jobs:
   split:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: meta-introspector/checkout@v4
         with:
           fetch-depth: 1
 
-      - uses: leanprover/lean4-action@v1
+      - uses: meta-introspector/lean-action@v1
         with:
           auto-config: false
 
       - name: Get lake packages
         run: lake build --no-build 2>/dev/null || true
 
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: meta-introspector/rust-toolchain@stable
 
       - name: Build lean_split
         working-directory: tools/lean_split
@@ -58,7 +58,7 @@ jobs:
           tar czf nix-modules.tar.gz nix-modules/
 
       - name: Create release
-        uses: softprops/action-gh-release@v2
+        uses: meta-introspector/action-gh-release@v2
         with:
           tag_name: split-${{ github.sha }}
           name: "Module Split ${{ github.sha }}"

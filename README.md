@@ -1,4 +1,72 @@
-# mathlib4
+# mathlib4 — `feature/split` branch
+
+> **This branch** adds tooling to split mathlib into individually selectable,
+> content-addressed modules. Instead of building all 7,500+ files, you pick
+> only the modules you need.
+
+## Why this branch exists
+
+Mathlib is large. Building it from source takes hours and gigabytes of RAM.
+Most projects only use a small fraction — for example, `HVertexOperator`
+needs just 1,294 of 7,516 modules (17%).
+
+This branch provides `lean_split`, a Rust tool that:
+
+1. **Traces** the transitive import closure of any root module
+2. **Catalogs** every module with a blake3 content hash, import list, and declaration count
+3. **Generates per-file nix derivations** so you can build only what you need
+
+A GitHub Action runs on every push, producing downloadable archives:
+- `catalog.tar.gz` — per-module JSON metadata
+- `nix-modules.tar.gz` — one `.nix` file per module + `select.nix`
+- `closure.txt` — flat import list
+
+### Quick start
+
+```bash
+# Download the latest release artifacts, then:
+tar xzf nix-modules.tar.gz
+
+# Build only HVertexOperator and its 1,294 deps
+nix-build nix-modules/select.nix --arg wanted '["Mathlib_Algebra_Vertex_HVertexOperator"]'
+
+# Or explore the catalog
+tar xzf catalog.tar.gz
+cat catalog/Mathlib.Algebra.Vertex.HVertexOperator.json
+```
+
+### Building lean_split locally
+
+```bash
+cd tools/lean_split
+cargo build --release
+./target/release/lean_split --help
+```
+
+### Subcommands
+
+| Command   | Description |
+|-----------|-------------|
+| `closure` | Transitive import closure (flat list) |
+| `dag`     | Import DAG as JSON |
+| `decls`   | Content-hash every declaration, resolve refs |
+| `extract` | Extract minimal declaration subset by hash |
+| `catalog` | Per-module JSON with hash, imports, decl count, size |
+| `nix`     | Per-file nix derivations + `default.nix` + `select.nix` |
+
+### How it helps
+
+- **Faster CI** — build only the modules your project touches
+- **Smaller environments** — no need to download all of mathlib's oleans
+- **Content-addressed** — each module has a blake3 hash; unchanged modules are cached
+- **Nix-native** — lazy `rec` evaluation means nix only builds what's referenced
+- **Reproducible** — deterministic hashes, pinned deps, no elan
+
+---
+
+*Upstream mathlib4 README follows below.*
+
+---
 
 ![GitHub CI](https://github.com/leanprover-community/mathlib4/actions/workflows/build.yml/badge.svg?branch=master)
 [![Bors enabled](https://raw.githubusercontent.com/bors-ng/bors-ng.github.io/refs/heads/master/images/badge_small.svg)](https://mathlib-bors-ca18eefec4cb.herokuapp.com/repositories/16)
